@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f0f0f">
   <meta name="description" content="Shared task and inventory management">
-  <title>TaskSync - Shared Task Manager</title>
-  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRhc2tTeW5jIiwKICAic2hvcnRfbmFtZSI6ICJUYXNrU3luYyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYwZjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBmMGYwZiIsCiAgImljb25zIjogW10KfQ==">
+  <link rel="manifest" href="manifest.json">
+  <title>TaskSync</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600;700&display=swap');
     
@@ -179,12 +179,17 @@
       gap: 8px;
     }
     
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
     .btn-primary {
       background: var(--accent-task);
       color: white;
     }
     
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: #3a8eef;
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
@@ -216,6 +221,16 @@
       font-size: 13px;
     }
     
+    .btn-danger {
+      background: rgba(255, 77, 77, 0.15);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 77, 77, 0.3);
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(255, 77, 77, 0.25);
+    }
+    
     /* Main Content */
     .main-content {
       padding: 24px 20px;
@@ -226,6 +241,7 @@
       gap: 12px;
       margin-bottom: 24px;
       flex-wrap: wrap;
+      align-items: center;
     }
     
     .view-tabs {
@@ -290,6 +306,12 @@
       margin-bottom: 4px;
     }
     
+    .list-meta {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
+    
     .list-type-badge {
       padding: 4px 10px;
       border-radius: 6px;
@@ -337,11 +359,20 @@
       border: 2px solid var(--border-medium);
       border-radius: 4px;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .task-checkbox.checked {
       background: var(--accent-task);
       border-color: var(--accent-task);
+    }
+    
+    .task-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 12px;
     }
     
     /* Today View */
@@ -361,6 +392,7 @@
       align-items: flex-start;
       gap: 12px;
       transition: all 0.2s;
+      cursor: pointer;
     }
     
     .task-item:hover {
@@ -428,7 +460,7 @@
       border: 1px solid var(--border-medium);
       border-radius: var(--radius-lg);
       padding: 24px;
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -526,6 +558,7 @@
       justify-content: center;
       padding: 40px;
       color: var(--text-secondary);
+      gap: 12px;
     }
     
     .spinner {
@@ -596,65 +629,61 @@
       box-shadow: 0 8px 24px rgba(74, 158, 255, 0.4);
     }
     
-    /* Responsive */
-    @media (max-width: 768px) {
-      .lists-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .view-controls {
-        flex-direction: column;
-      }
-      
-      .view-tabs {
-        width: 100%;
-      }
-      
-      .modal-content {
-        padding: 20px;
-      }
-    }
-    
-    .hidden {
-      display: none;
-    }
-    
-    /* Task Detail Styles */
-    .task-detail-header {
+    /* Quantity Controls */
+    .quantity-controls {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 20px;
+      align-items: center;
+      gap: 16px;
+      justify-content: center;
+      padding: 20px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
     }
     
-    .task-detail-title {
+    .quantity-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-medium);
+      color: var(--text-primary);
       font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
       font-weight: 600;
-      margin-bottom: 8px;
     }
     
-    .task-detail-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      color: var(--text-secondary);
-      font-size: 14px;
+    .quantity-btn:hover:not(:disabled) {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-inventory);
+      transform: scale(1.1);
     }
     
-    .task-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 24px;
+    .quantity-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
     }
     
-    .checkbox-list {
+    .quantity-display {
+      font-size: 32px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      min-width: 80px;
+      text-align: center;
+      color: var(--accent-inventory);
+    }
+    
+    /* Checklist */
+    .checklist-items {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-top: 16px;
     }
     
-    .checkbox-item {
+    .checklist-item {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -663,13 +692,15 @@
       border-radius: var(--radius-sm);
       cursor: pointer;
       transition: all 0.2s;
+      border: 1px solid var(--border-subtle);
     }
     
-    .checkbox-item:hover {
+    .checklist-item:hover {
       background: var(--bg-tertiary);
+      border-color: var(--border-medium);
     }
     
-    .checkbox-box {
+    .checklist-checkbox {
       width: 20px;
       height: 20px;
       border: 2px solid var(--border-medium);
@@ -681,51 +712,35 @@
       transition: all 0.2s;
     }
     
-    .checkbox-box.checked {
+    .checklist-checkbox.checked {
       background: var(--accent-checklist);
       border-color: var(--accent-checklist);
     }
     
-    .checkbox-label {
+    .checklist-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .checklist-label {
       flex: 1;
       font-size: 15px;
     }
     
-    .quantity-controls {
+    .checklist-label.checked {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    
+    .add-checklist-item {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 16px;
+      gap: 8px;
+      margin-top: 12px;
     }
     
-    .quantity-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-medium);
-      color: var(--text-primary);
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    
-    .quantity-btn:hover {
-      background: var(--bg-tertiary);
-      transform: scale(1.1);
-    }
-    
-    .quantity-display {
-      font-size: 24px;
-      font-weight: 600;
-      font-family: var(--font-mono);
-      min-width: 60px;
-      text-align: center;
-    }
-    
+    /* Share Section */
     .share-section {
       margin-top: 24px;
       padding-top: 24px;
@@ -733,8 +748,11 @@
     }
     
     .share-title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
       margin-bottom: 12px;
     }
     
@@ -749,26 +767,50 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
+      padding: 10px 12px;
       background: var(--bg-primary);
       border-radius: var(--radius-sm);
       font-size: 14px;
       font-family: var(--font-mono);
     }
     
-    .remove-user-btn {
-      background: none;
-      border: none;
-      color: var(--text-tertiary);
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.2s;
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     
-    .remove-user-btn:hover {
-      color: #ff6b6b;
-      background: rgba(255, 107, 107, 0.1);
+    /* Responsive */
+    @media (max-width: 768px) {
+      .lists-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .view-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .view-tabs {
+        width: 100%;
+      }
+      
+      .modal-content {
+        padding: 20px;
+        max-width: 100%;
+      }
+      
+      .task-actions {
+        flex-direction: column;
+      }
+      
+      .task-actions .btn {
+        width: 100%;
+      }
+    }
+    
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -785,204 +827,41 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Firebase Configuration Notice Component
-    function FirebaseConfigNotice() {
-      const [showInstructions, setShowInstructions] = useState(true);
-      
-      return (
-        <div className="auth-screen">
-          <div className="auth-card" style={{maxWidth: '600px'}}>
-            <div className="auth-title">🔧 Setup Required</div>
-            <div className="auth-subtitle">Let's connect your app to Firebase</div>
-            
-            {showInstructions && (
-              <div style={{
-                background: 'var(--bg-primary)',
-                padding: '20px',
-                borderRadius: 'var(--radius-md)',
-                marginBottom: '20px',
-                fontSize: '14px',
-                lineHeight: '1.8'
-              }}>
-                <h3 style={{marginBottom: '12px', fontSize: '16px'}}>Quick Setup (5 minutes):</h3>
-                <ol style={{paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-                  <li>Go to <a href="https://console.firebase.google.com" target="_blank" style={{color: 'var(--accent-task)'}}>console.firebase.google.com</a></li>
-                  <li>Click "Add project" and create a new project</li>
-                  <li>Click the web icon (&lt;/&gt;) to add a web app</li>
-                  <li>Copy the config values from the code Firebase shows you</li>
-                  <li>Enable "Email/Password" authentication in Firebase Console → Authentication → Sign-in method</li>
-                  <li>Enable "Realtime Database" in Firebase Console → Build → Realtime Database → Create Database (start in test mode)</li>
-                  <li>Paste your config below</li>
-                </ol>
-              </div>
-            )}
-            
-            <FirebaseConfigForm onToggleInstructions={() => setShowInstructions(!showInstructions)} />
-          </div>
-        </div>
-      );
-    }
+    // Firebase Configuration (built-in)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWbDIrWicXf8_I8J8metcrId4KdI8NP_4",
+      authDomain: "tasksync-d15l2.firebaseapp.com",
+      databaseURL: "https://tasksync-d1512-default-rtdb.europe-west1.firebasedatabase.app/",
+      projectId: "tasksync-d15l2",
+      storageBucket: "tasksync-d15l2.firebasestorage.app",
+      messagingSenderId: "372192891626",
+      appId: "1:372192891626:web:e426a8e83d547455cc3d93"
+    };
 
-    // Firebase Config Form
-    function FirebaseConfigForm({ onToggleInstructions }) {
-      const [config, setConfig] = useState({
-        apiKey: '',
-        authDomain: '',
-        projectId: '',
-        databaseURL: '',
-        storageBucket: '',
-        messagingSenderId: '',
-        appId: ''
-      });
-      const [error, setError] = useState('');
-
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        setError('');
-        
-        // Validate config
-        if (!config.apiKey || !config.authDomain || !config.projectId || !config.databaseURL) {
-          setError('Please fill in all required fields (apiKey, authDomain, projectId, databaseURL)');
-          return;
-        }
-        
-        // Save to localStorage and initialize
-        localStorage.setItem('firebaseConfig', JSON.stringify(config));
-        window.location.reload();
-      };
-
-      return (
-        <form onSubmit={handleSubmit} className="auth-form">
-          {error && <div className="alert alert-error">{error}</div>}
-          
-          <div className="form-group">
-            <label className="form-label">API Key *</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.apiKey}
-              onChange={(e) => setConfig({...config, apiKey: e.target.value})}
-              placeholder="AIza..."
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Auth Domain *</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.authDomain}
-              onChange={(e) => setConfig({...config, authDomain: e.target.value})}
-              placeholder="your-project.firebaseapp.com"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Project ID *</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.projectId}
-              onChange={(e) => setConfig({...config, projectId: e.target.value})}
-              placeholder="your-project-id"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Database URL *</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.databaseURL}
-              onChange={(e) => setConfig({...config, databaseURL: e.target.value})}
-              placeholder="https://your-project.firebaseio.com"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Storage Bucket</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.storageBucket}
-              onChange={(e) => setConfig({...config, storageBucket: e.target.value})}
-              placeholder="your-project.appspot.com"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Messaging Sender ID</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.messagingSenderId}
-              onChange={(e) => setConfig({...config, messagingSenderId: e.target.value})}
-              placeholder="123456789"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">App ID</label>
-            <input
-              type="text"
-              className="form-input"
-              value={config.appId}
-              onChange={(e) => setConfig({...config, appId: e.target.value})}
-              placeholder="1:123:web:abc"
-            />
-          </div>
-          
-          <button type="submit" className="btn btn-primary">
-            Save & Initialize Firebase
-          </button>
-          
-          <button type="button" className="btn btn-ghost" onClick={onToggleInstructions}>
-            Toggle Instructions
-          </button>
-        </form>
-      );
-    }
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
 
     // Main App Component
     function App() {
-      const [firebaseInitialized, setFirebaseInitialized] = useState(false);
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
 
       useEffect(() => {
-        // Check if Firebase config exists
-        const config = localStorage.getItem('firebaseConfig');
-        if (!config) {
+        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+          setUser(user);
           setLoading(false);
-          return;
-        }
+        });
 
-        try {
-          const firebaseConfig = JSON.parse(config);
-          firebase.initializeApp(firebaseConfig);
-          setFirebaseInitialized(true);
-
-          // Auth state listener
-          firebase.auth().onAuthStateChanged((user) => {
-            setUser(user);
-            setLoading(false);
-          });
-        } catch (error) {
-          console.error('Firebase initialization error:', error);
-          setLoading(false);
-        }
+        return () => unsubscribe();
       }, []);
 
       if (loading) {
         return (
           <div className="loading">
             <div className="spinner"></div>
+            <span>Loading...</span>
           </div>
         );
-      }
-
-      if (!firebaseInitialized) {
-        return <FirebaseConfigNotice />;
       }
 
       if (!user) {
@@ -1012,7 +891,17 @@
             await firebase.auth().createUserWithEmailAndPassword(email, password);
           }
         } catch (err) {
-          setError(err.message);
+          let errorMessage = err.message;
+          if (err.code === 'auth/user-not-found') {
+            errorMessage = 'No account found with this email. Please sign up.';
+          } else if (err.code === 'auth/wrong-password') {
+            errorMessage = 'Incorrect password. Please try again.';
+          } else if (err.code === 'auth/email-already-in-use') {
+            errorMessage = 'Email already in use. Please sign in instead.';
+          } else if (err.code === 'auth/weak-password') {
+            errorMessage = 'Password should be at least 6 characters.';
+          }
+          setError(errorMessage);
         } finally {
           setLoading(false);
         }
@@ -1037,6 +926,7 @@
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                 />
               </div>
 
@@ -1049,6 +939,7 @@
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  autoComplete={isLogin ? "current-password" : "new-password"}
                 />
               </div>
 
@@ -1108,16 +999,17 @@
 
       const getTodayTasks = () => {
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const tasks = [];
         
         lists.forEach(list => {
           if (list.tasks) {
             Object.keys(list.tasks).forEach(taskId => {
               const task = list.tasks[taskId];
-              // Simple logic: show tasks that are due today or overdue
               if (task.nextDue) {
                 const dueDate = new Date(task.nextDue);
-                if (dueDate <= today) {
+                dueDate.setHours(0, 0, 0, 0);
+                if (dueDate <= today && !task.completed) {
                   tasks.push({
                     ...task,
                     id: taskId,
@@ -1131,7 +1023,7 @@
           }
         });
         
-        return tasks;
+        return tasks.sort((a, b) => new Date(a.nextDue) - new Date(b.nextDue));
       };
 
       return (
@@ -1164,15 +1056,25 @@
               </div>
             </div>
 
-            {currentView === 'today' && <TodayView tasks={getTodayTasks()} onTaskClick={(task) => {
-              setSelectedTask(task);
-              setShowModal(true);
-            }} />}
+            {currentView === 'today' && (
+              <TodayView 
+                tasks={getTodayTasks()} 
+                onTaskClick={(task) => {
+                  setSelectedTask(task);
+                  setShowModal(true);
+                }} 
+              />
+            )}
             
-            {currentView === 'lists' && <ListsView lists={lists} onListClick={(list) => {
-              setSelectedList(list);
-              setShowModal(true);
-            }} />}
+            {currentView === 'lists' && (
+              <ListsView 
+                lists={lists} 
+                onListClick={(list) => {
+                  setSelectedList(list);
+                  setShowModal(true);
+                }} 
+              />
+            )}
           </main>
 
           <button className="fab" onClick={() => {
@@ -1206,7 +1108,7 @@
           <div className="empty-state">
             <div className="empty-icon">✨</div>
             <div className="empty-title">All clear!</div>
-            <div className="empty-text">No tasks due today</div>
+            <div className="empty-text">No tasks due today. Click + to create a list.</div>
           </div>
         );
       }
@@ -1215,7 +1117,7 @@
         <div className="today-tasks">
           {tasks.map(task => (
             <div
-              key={task.id}
+              key={`${task.listId}-${task.id}`}
               className={`task-item type-${task.listType}`}
               onClick={() => onTaskClick(task)}
             >
@@ -1241,168 +1143,196 @@
             <div className="empty-icon">📋</div>
             <div className="empty-title">No lists yet</div>
             <div className="empty-text">Create your first list to get started</div>
+            <button className="btn btn-primary" style={{marginTop: '16px'}}>
+              Click the + button below
+            </button>
           </div>
         );
       }
 
       return (
         <div className="lists-grid">
-          {lists.map(list => (
-            <div key={list.id} className="list-card" onClick={() => onListClick(list)}>
-              <div className="list-header">
-                <div>
-                  <div className="list-title">{list.name}</div>
+          {lists.map(list => {
+            const taskCount = list.tasks ? Object.keys(list.tasks).length : 0;
+            const completedCount = list.tasks ? Object.values(list.tasks).filter(t => t.completed).length : 0;
+            
+            return (
+              <div key={list.id} className="list-card" onClick={() => onListClick(list)}>
+                <div className="list-header">
+                  <div>
+                    <div className="list-title">{list.name}</div>
+                    <div className="list-meta">{taskCount} items • {completedCount} completed</div>
+                  </div>
+                  <span className={`list-type-badge badge-${list.type}`}>
+                    {list.type}
+                  </span>
                 </div>
-                <span className={`list-type-badge badge-${list.type}`}>
-                  {list.type}
-                </span>
+                
+                {list.tasks && taskCount > 0 && (
+                  <div className="task-preview">
+                    {Object.keys(list.tasks).slice(0, 3).map(taskId => (
+                      <div key={taskId} className="task-preview-item">
+                        <div className={`task-checkbox ${list.tasks[taskId].completed ? 'checked' : ''}`}></div>
+                        <span>{list.tasks[taskId].name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              
-              {list.tasks && (
-                <div className="task-preview">
-                  {Object.keys(list.tasks).slice(0, 3).map(taskId => (
-                    <div key={taskId} className="task-preview-item">
-                      <div className={`task-checkbox ${list.tasks[taskId].completed ? 'checked' : ''}`}></div>
-                      <span>{list.tasks[taskId].name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     }
 
     // Modal Component
     function Modal({ onClose, list, task, user }) {
-      const [mode, setMode] = useState(list ? 'view' : 'create');
-      const [formData, setFormData] = useState({
-        name: list?.name || '',
-        type: list?.type || 'task',
-        description: list?.description || ''
-      });
-
-      const handleCreateList = async () => {
-        const newList = {
-          ...formData,
-          owner: user.uid,
-          createdAt: Date.now(),
-          tasks: {}
-        };
-
-        const listRef = firebase.database().ref('lists').push();
-        await listRef.set(newList);
-        onClose();
-      };
-
       if (task) {
         return <TaskDetailModal task={task} onClose={onClose} user={user} />;
-      }
-
-      if (mode === 'create') {
-        return (
-          <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-title">Create New List</div>
-                <button className="close-btn" onClick={onClose}>×</button>
-              </div>
-
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">List Name</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="e.g., Household Tasks"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">List Type</label>
-                  <select
-                    className="select-input"
-                    value={formData.type}
-                    onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  >
-                    <option value="task">Recurring Tasks</option>
-                    <option value="inventory">Inventory (with quantities)</option>
-                    <option value="checklist">Checklist Tasks</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Description (Optional)</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    placeholder="What is this list for?"
-                  />
-                </div>
-
-                <button
-                  className="btn btn-primary"
-                  onClick={handleCreateList}
-                  disabled={!formData.name}
-                >
-                  Create List
-                </button>
-              </div>
-            </div>
-          </div>
-        );
       }
 
       if (list) {
         return <ListDetailModal list={list} onClose={onClose} user={user} />;
       }
 
-      return null;
+      return <CreateListModal onClose={onClose} user={user} />;
+    }
+
+    // Create List Modal
+    function CreateListModal({ onClose, user }) {
+      const [formData, setFormData] = useState({
+        name: '',
+        type: 'task',
+        description: ''
+      });
+      const [loading, setLoading] = useState(false);
+
+      const handleCreateList = async () => {
+        if (!formData.name.trim()) return;
+        
+        setLoading(true);
+        try {
+          const newList = {
+            ...formData,
+            owner: user.uid,
+            createdAt: Date.now(),
+            tasks: {}
+          };
+
+          const listRef = firebase.database().ref('lists').push();
+          await listRef.set(newList);
+          onClose();
+        } catch (error) {
+          alert('Error creating list: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Create New List</div>
+              <button className="close-btn" onClick={onClose}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="form-label">List Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  placeholder="e.g., Household Tasks"
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">List Type</label>
+                <select
+                  className="select-input"
+                  value={formData.type}
+                  onChange={(e) => setFormData({...formData, type: e.target.value})}
+                >
+                  <option value="task">Recurring Tasks (with schedules)</option>
+                  <option value="inventory">Inventory (with quantities)</option>
+                  <option value="checklist">Checklist Tasks (with sub-items)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description (Optional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  placeholder="What is this list for?"
+                />
+              </div>
+
+              <button
+                className="btn btn-primary"
+                onClick={handleCreateList}
+                disabled={!formData.name.trim() || loading}
+              >
+                {loading ? 'Creating...' : 'Create List'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     // List Detail Modal
     function ListDetailModal({ list, onClose, user }) {
       const [newTaskName, setNewTaskName] = useState('');
       const [newTaskRecurrence, setNewTaskRecurrence] = useState('weekly');
+      const [loading, setLoading] = useState(false);
 
       const handleAddTask = async () => {
         if (!newTaskName.trim()) return;
 
-        const taskRef = firebase.database().ref(`lists/${list.id}/tasks`).push();
-        const newTask = {
-          name: newTaskName,
-          completed: false,
-          createdAt: Date.now(),
-          createdBy: user.uid
-        };
-
-        if (list.type === 'task') {
-          newTask.recurrence = newTaskRecurrence;
-          newTask.nextDue = Date.now();
-        } else if (list.type === 'inventory') {
-          newTask.quantity = 1;
-        } else if (list.type === 'checklist') {
-          newTask.checklist = {
-            'item1': { label: 'Item 1', checked: false }
+        setLoading(true);
+        try {
+          const taskRef = firebase.database().ref(`lists/${list.id}/tasks`).push();
+          const newTask = {
+            name: newTaskName,
+            completed: false,
+            createdAt: Date.now(),
+            createdBy: user.uid
           };
-        }
 
-        await taskRef.set(newTask);
-        setNewTaskName('');
+          if (list.type === 'task') {
+            newTask.recurrence = newTaskRecurrence;
+            newTask.nextDue = Date.now();
+          } else if (list.type === 'inventory') {
+            newTask.quantity = 1;
+          } else if (list.type === 'checklist') {
+            newTask.checklist = {};
+          }
+
+          await taskRef.set(newTask);
+          setNewTaskName('');
+        } catch (error) {
+          alert('Error adding task: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
       };
 
-      const handleShareList = async () => {
-        const email = prompt('Enter email address to share with:');
-        if (!email) return;
-
-        // In a real app, you'd look up the user by email
-        // For now, we'll just show an info message
-        alert('To share: Have the other user sign up, then add their user ID here. This is a simplified demo.');
+      const handleDeleteList = async () => {
+        if (!confirm(`Delete "${list.name}"? This cannot be undone.`)) return;
+        
+        try {
+          await firebase.database().ref(`lists/${list.id}`).remove();
+          onClose();
+        } catch (error) {
+          alert('Error deleting list: ' + error.message);
+        }
       };
 
       const tasks = list.tasks ? Object.keys(list.tasks).map(id => ({
@@ -1423,17 +1353,17 @@
 
             <div className="modal-body">
               <div className="form-group">
-                <label className="form-label">Add New Task</label>
+                <label className="form-label">Add New Item</label>
                 <div style={{display: 'flex', gap: '8px'}}>
                   <input
                     type="text"
                     className="form-input"
                     value={newTaskName}
                     onChange={(e) => setNewTaskName(e.target.value)}
-                    placeholder="Task name..."
+                    placeholder="Item name..."
                     onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
                   />
-                  <button className="btn btn-primary" onClick={handleAddTask}>
+                  <button className="btn btn-primary" onClick={handleAddTask} disabled={loading}>
                     Add
                   </button>
                 </div>
@@ -1456,31 +1386,26 @@
               )}
 
               <div style={{marginTop: '24px'}}>
-                <div className="form-label" style={{marginBottom: '12px'}}>Tasks</div>
+                <div className="form-label" style={{marginBottom: '12px'}}>
+                  Items ({tasks.length})
+                </div>
                 {tasks.length === 0 ? (
                   <div style={{color: 'var(--text-secondary)', fontSize: '14px', textAlign: 'center', padding: '20px'}}>
-                    No tasks yet
+                    No items yet. Add one above!
                   </div>
                 ) : (
                   <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                     {tasks.map(task => (
-                      <div key={task.id} className="task-preview-item">
-                        <div className={`task-checkbox ${task.completed ? 'checked' : ''}`}></div>
-                        <span style={{flex: 1}}>{task.name}</span>
-                        {list.type === 'inventory' && task.quantity && (
-                          <span style={{fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)'}}>
-                            ×{task.quantity}
-                          </span>
-                        )}
-                      </div>
+                      <TaskItem key={task.id} task={task} listId={list.id} listType={list.type} />
                     ))}
                   </div>
                 )}
               </div>
 
               <div className="share-section">
-                <button className="btn btn-secondary" onClick={handleShareList}>
-                  Share List
+                <div className="share-title">Danger Zone</div>
+                <button className="btn btn-danger" onClick={handleDeleteList}>
+                  Delete This List
                 </button>
               </div>
             </div>
@@ -1489,33 +1414,205 @@
       );
     }
 
-    // Task Detail Modal (simplified)
-    function TaskDetailModal({ task, onClose, user }) {
-      const handleComplete = async () => {
-        await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).update({
-          completed: !task.completed,
-          completedAt: Date.now()
-        });
-        onClose();
+    // Task Item Component
+    function TaskItem({ task, listId, listType }) {
+      const [showDetail, setShowDetail] = useState(false);
+
+      return (
+        <>
+          <div 
+            className="task-preview-item"
+            onClick={() => setShowDetail(true)}
+          >
+            <div className={`task-checkbox ${task.completed ? 'checked' : ''}`}></div>
+            <span style={{flex: 1}}>{task.name}</span>
+            {listType === 'inventory' && task.quantity !== undefined && (
+              <span style={{fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)'}}>
+                ×{task.quantity}
+              </span>
+            )}
+          </div>
+          
+          {showDetail && (
+            <TaskDetailModal 
+              task={{...task, listId, listType, id: task.id}} 
+              onClose={() => setShowDetail(false)} 
+            />
+          )}
+        </>
+      );
+    }
+
+    // Task Detail Modal
+    function TaskDetailModal({ task, onClose }) {
+      const [quantity, setQuantity] = useState(task.quantity || 1);
+      const [checklist, setChecklist] = useState(task.checklist || {});
+      const [newChecklistItem, setNewChecklistItem] = useState('');
+
+      const handleToggleComplete = async () => {
+        try {
+          await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).update({
+            completed: !task.completed,
+            completedAt: Date.now()
+          });
+          onClose();
+        } catch (error) {
+          alert('Error updating task: ' + error.message);
+        }
+      };
+
+      const handleUpdateQuantity = async (delta) => {
+        const newQty = Math.max(0, quantity + delta);
+        setQuantity(newQty);
+        
+        try {
+          await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).update({
+            quantity: newQty
+          });
+        } catch (error) {
+          alert('Error updating quantity: ' + error.message);
+        }
+      };
+
+      const handleToggleChecklistItem = async (itemId) => {
+        const newChecklist = {
+          ...checklist,
+          [itemId]: {
+            ...checklist[itemId],
+            checked: !checklist[itemId].checked
+          }
+        };
+        setChecklist(newChecklist);
+        
+        try {
+          await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).update({
+            checklist: newChecklist
+          });
+        } catch (error) {
+          alert('Error updating checklist: ' + error.message);
+        }
+      };
+
+      const handleAddChecklistItem = async () => {
+        if (!newChecklistItem.trim()) return;
+        
+        const itemId = 'item_' + Date.now();
+        const newChecklist = {
+          ...checklist,
+          [itemId]: {
+            label: newChecklistItem,
+            checked: false
+          }
+        };
+        setChecklist(newChecklist);
+        setNewChecklistItem('');
+        
+        try {
+          await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).update({
+            checklist: newChecklist
+          });
+        } catch (error) {
+          alert('Error adding item: ' + error.message);
+        }
+      };
+
+      const handleDeleteTask = async () => {
+        if (!confirm(`Delete "${task.name}"?`)) return;
+        
+        try {
+          await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).remove();
+          onClose();
+        } catch (error) {
+          alert('Error deleting task: ' + error.message);
+        }
       };
 
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">{task.name}</div>
+              <div>
+                <div className="modal-title">{task.name}</div>
+                <span className={`list-type-badge badge-${task.listType}`}>{task.listType}</span>
+              </div>
               <button className="close-btn" onClick={onClose}>×</button>
             </div>
 
             <div className="modal-body">
-              <div className="task-detail-meta">
-                <div>List: {task.listName}</div>
-                {task.nextDue && <div>Due: {new Date(task.nextDue).toLocaleDateString()}</div>}
-              </div>
+              {task.listType === 'inventory' && (
+                <>
+                  <div className="form-label">Quantity</div>
+                  <div className="quantity-controls">
+                    <button 
+                      className="quantity-btn" 
+                      onClick={() => handleUpdateQuantity(-1)}
+                      disabled={quantity <= 0}
+                    >
+                      −
+                    </button>
+                    <div className="quantity-display">{quantity}</div>
+                    <button 
+                      className="quantity-btn" 
+                      onClick={() => handleUpdateQuantity(1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {task.listType === 'checklist' && (
+                <>
+                  <div className="form-label">Checklist Items</div>
+                  <div className="checklist-items">
+                    {Object.keys(checklist).map(itemId => (
+                      <div 
+                        key={itemId}
+                        className="checklist-item"
+                        onClick={() => handleToggleChecklistItem(itemId)}
+                      >
+                        <div className={`checklist-checkbox ${checklist[itemId].checked ? 'checked' : ''}`}></div>
+                        <span className={`checklist-label ${checklist[itemId].checked ? 'checked' : ''}`}>
+                          {checklist[itemId].label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="add-checklist-item">
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={newChecklistItem}
+                      onChange={(e) => setNewChecklistItem(e.target.value)}
+                      placeholder="Add sub-item..."
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
+                    />
+                    <button className="btn btn-secondary" onClick={handleAddChecklistItem}>
+                      Add
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {task.nextDue && (
+                <div style={{padding: '12px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)', fontSize: '14px'}}>
+                  <div className="form-label" style={{marginBottom: '4px'}}>Next Due</div>
+                  <div>{new Date(task.nextDue).toLocaleDateString()}</div>
+                  {task.recurrence && (
+                    <div style={{color: 'var(--text-secondary)', marginTop: '4px'}}>
+                      Repeats: {task.recurrence}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="task-actions">
-                <button className="btn btn-primary" onClick={handleComplete}>
-                  {task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+                <button className="btn btn-primary" onClick={handleToggleComplete}>
+                  {task.completed ? '✓ Completed' : 'Mark Complete'}
+                </button>
+                <button className="btn btn-danger" onClick={handleDeleteTask}>
+                  Delete
                 </button>
               </div>
             </div>
