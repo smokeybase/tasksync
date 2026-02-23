@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f0f0f">
+  <meta name="description" content="Shared task and inventory management">
+  <title>TaskSync - Shared Task Manager</title>
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRhc2tTeW5jIiwKICAic2hvcnRfbmFtZSI6ICJUYXNrU3luYyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYwZjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBmMGYwZiIsCiAgImljb25zIjogW10KfQ==">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-primary: #0f0f0f;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #242424;
+      --bg-elevated: #2a2a2a;
+      
+      --text-primary: #e8e8e8;
+      --text-secondary: #a0a0a0;
+      --text-tertiary: #707070;
+      
+      --accent-task: #4a9eff;
+      --accent-inventory: #00d9a3;
+      --accent-checklist: #ff6b9d;
+      --accent-warning: #ffb84d;
+      
+      --border-subtle: #2a2a2a;
+      --border-medium: #404040;
+      
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      
+      --font-body: 'Work Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .app-header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    
+    .app-title {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .user-info {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+    
+    /* Auth Screen */
+    .auth-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .auth-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .auth-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    
+    .auth-subtitle {
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+    
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-input {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: var(--font-body);
+      transition: all 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-task);
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: var(--accent-task);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #3a8eef;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+    }
+    
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+    }
+    
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-medium);
+    }
+    
+    .btn-ghost:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    
+    /* Main Content */
+    .main-content {
+      padding: 24px 20px;
+    }
+    
+    .view-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .view-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+    
+    .view-tab {
+      padding: 8px 16px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+    
+    .view-tab.active {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+    
+    /* Task Lists */
+    .lists-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+    
+    .list-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .list-card:hover {
+      border-color: var(--border-medium);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    
+    .list-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .list-type-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
+    }
+    
+    .badge-task {
+      background: rgba(74, 158, 255, 0.15);
+      color: var(--accent-task);
+    }
+    
+    .badge-inventory {
+      background: rgba(0, 217, 163, 0.15);
+      color: var(--accent-inventory);
+    }
+    
+    .badge-checklist {
+      background: rgba(255, 107, 157, 0.15);
+      color: var(--accent-checklist);
+    }
+    
+    .task-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .task-preview-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .task-checkbox {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-medium);
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    
+    .task-checkbox.checked {
+      background: var(--accent-task);
+      border-color: var(--accent-task);
+    }
+    
+    /* Today View */
+    .today-tasks {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .task-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+    
+    .task-item:hover {
+      border-color: var(--border-medium);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .task-item.type-task {
+      border-left-color: var(--accent-task);
+    }
+    
+    .task-item.type-inventory {
+      border-left-color: var(--accent-inventory);
+    }
+    
+    .task-item.type-checklist {
+      border-left-color: var(--accent-checklist);
+    }
+    
+    .task-content {
+      flex: 1;
+    }
+    
+    .task-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .task-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+    
+    .task-list-name {
+      font-family: var(--font-mono);
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      animation: fadeIn 0.2s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.3s;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    
+    .close-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+    
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .select-input {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: var(--font-body);
+      cursor: pointer;
+    }
+    
+    .select-input:focus {
+      outline: none;
+      border-color: var(--accent-task);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .empty-text {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+    
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+    
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-medium);
+      border-top-color: var(--accent-task);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .alert-error {
+      background: rgba(255, 77, 77, 0.15);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 77, 77, 0.3);
+    }
+    
+    .alert-success {
+      background: rgba(0, 217, 163, 0.15);
+      color: var(--accent-inventory);
+      border: 1px solid rgba(0, 217, 163, 0.3);
+    }
+    
+    .alert-info {
+      background: rgba(74, 158, 255, 0.15);
+      color: var(--accent-task);
+      border: 1px solid rgba(74, 158, 255, 0.3);
+    }
+    
+    /* Fab Button */
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent-task);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      z-index: 99;
+    }
+    
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 8px 24px rgba(74, 158, 255, 0.4);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .lists-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .view-controls {
+        flex-direction: column;
+      }
+      
+      .view-tabs {
+        width: 100%;
+      }
+      
+      .modal-content {
+        padding: 20px;
+      }
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Task Detail Styles */
+    .task-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    
+    .task-detail-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .task-detail-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .checkbox-item:hover {
+      background: var(--bg-tertiary);
+    }
+    
+    .checkbox-box {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-medium);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    
+    .checkbox-box.checked {
+      background: var(--accent-checklist);
+      border-color: var(--accent-checklist);
+    }
+    
+    .checkbox-label {
+      flex: 1;
+      font-size: 15px;
+    }
+    
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .quantity-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-medium);
+      color: var(--text-primary);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .quantity-btn:hover {
+      background: var(--bg-tertiary);
+      transform: scale(1.1);
+    }
+    
+    .quantity-display {
+      font-size: 24px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      min-width: 60px;
+      text-align: center;
+    }
+    
+    .share-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    .share-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    
+    .shared-users {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .shared-user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: var(--font-mono);
+    }
+    
+    .remove-user-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    
+    .remove-user-btn:hover {
+      color: #ff6b6b;
+      background: rgba(255, 107, 107, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Firebase Configuration Notice Component
+    function FirebaseConfigNotice() {
+      const [showInstructions, setShowInstructions] = useState(true);
+      
+      return (
+        <div className="auth-screen">
+          <div className="auth-card" style={{maxWidth: '600px'}}>
+            <div className="auth-title">🔧 Setup Required</div>
+            <div className="auth-subtitle">Let's connect your app to Firebase</div>
+            
+            {showInstructions && (
+              <div style={{
+                background: 'var(--bg-primary)',
+                padding: '20px',
+                borderRadius: 'var(--radius-md)',
+                marginBottom: '20px',
+                fontSize: '14px',
+                lineHeight: '1.8'
+              }}>
+                <h3 style={{marginBottom: '12px', fontSize: '16px'}}>Quick Setup (5 minutes):</h3>
+                <ol style={{paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                  <li>Go to <a href="https://console.firebase.google.com" target="_blank" style={{color: 'var(--accent-task)'}}>console.firebase.google.com</a></li>
+                  <li>Click "Add project" and create a new project</li>
+                  <li>Click the web icon (&lt;/&gt;) to add a web app</li>
+                  <li>Copy the config values from the code Firebase shows you</li>
+                  <li>Enable "Email/Password" authentication in Firebase Console → Authentication → Sign-in method</li>
+                  <li>Enable "Realtime Database" in Firebase Console → Build → Realtime Database → Create Database (start in test mode)</li>
+                  <li>Paste your config below</li>
+                </ol>
+              </div>
+            )}
+            
+            <FirebaseConfigForm onToggleInstructions={() => setShowInstructions(!showInstructions)} />
+          </div>
+        </div>
+      );
+    }
+
+    // Firebase Config Form
+    function FirebaseConfigForm({ onToggleInstructions }) {
+      const [config, setConfig] = useState({
+        apiKey: '',
+        authDomain: '',
+        projectId: '',
+        databaseURL: '',
+        storageBucket: '',
+        messagingSenderId: '',
+        appId: ''
+      });
+      const [error, setError] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        setError('');
+        
+        // Validate config
+        if (!config.apiKey || !config.authDomain || !config.projectId || !config.databaseURL) {
+          setError('Please fill in all required fields (apiKey, authDomain, projectId, databaseURL)');
+          return;
+        }
+        
+        // Save to localStorage and initialize
+        localStorage.setItem('firebaseConfig', JSON.stringify(config));
+        window.location.reload();
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="auth-form">
+          {error && <div className="alert alert-error">{error}</div>}
+          
+          <div className="form-group">
+            <label className="form-label">API Key *</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.apiKey}
+              onChange={(e) => setConfig({...config, apiKey: e.target.value})}
+              placeholder="AIza..."
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Auth Domain *</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.authDomain}
+              onChange={(e) => setConfig({...config, authDomain: e.target.value})}
+              placeholder="your-project.firebaseapp.com"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Project ID *</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.projectId}
+              onChange={(e) => setConfig({...config, projectId: e.target.value})}
+              placeholder="your-project-id"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Database URL *</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.databaseURL}
+              onChange={(e) => setConfig({...config, databaseURL: e.target.value})}
+              placeholder="https://your-project.firebaseio.com"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Storage Bucket</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.storageBucket}
+              onChange={(e) => setConfig({...config, storageBucket: e.target.value})}
+              placeholder="your-project.appspot.com"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Messaging Sender ID</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.messagingSenderId}
+              onChange={(e) => setConfig({...config, messagingSenderId: e.target.value})}
+              placeholder="123456789"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">App ID</label>
+            <input
+              type="text"
+              className="form-input"
+              value={config.appId}
+              onChange={(e) => setConfig({...config, appId: e.target.value})}
+              placeholder="1:123:web:abc"
+            />
+          </div>
+          
+          <button type="submit" className="btn btn-primary">
+            Save & Initialize Firebase
+          </button>
+          
+          <button type="button" className="btn btn-ghost" onClick={onToggleInstructions}>
+            Toggle Instructions
+          </button>
+        </form>
+      );
+    }
+
+    // Main App Component
+    function App() {
+      const [firebaseInitialized, setFirebaseInitialized] = useState(false);
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        // Check if Firebase config exists
+        const config = localStorage.getItem('firebaseConfig');
+        if (!config) {
+          setLoading(false);
+          return;
+        }
+
+        try {
+          const firebaseConfig = JSON.parse(config);
+          firebase.initializeApp(firebaseConfig);
+          setFirebaseInitialized(true);
+
+          // Auth state listener
+          firebase.auth().onAuthStateChanged((user) => {
+            setUser(user);
+            setLoading(false);
+          });
+        } catch (error) {
+          console.error('Firebase initialization error:', error);
+          setLoading(false);
+        }
+      }, []);
+
+      if (loading) {
+        return (
+          <div className="loading">
+            <div className="spinner"></div>
+          </div>
+        );
+      }
+
+      if (!firebaseInitialized) {
+        return <FirebaseConfigNotice />;
+      }
+
+      if (!user) {
+        return <AuthScreen />;
+      }
+
+      return <MainApp user={user} />;
+    }
+
+    // Auth Screen
+    function AuthScreen() {
+      const [isLogin, setIsLogin] = useState(true);
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+          if (isLogin) {
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+          } else {
+            await firebase.auth().createUserWithEmailAndPassword(email, password);
+          }
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="auth-screen">
+          <div className="auth-card">
+            <div className="auth-title">TaskSync</div>
+            <div className="auth-subtitle">
+              {isLogin ? 'Welcome back' : 'Create your account'}
+            </div>
+
+            {error && <div className="alert alert-error">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+              >
+                {isLogin ? 'Need an account? Sign up' : 'Have an account? Sign in'}
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // Main App (after login)
+    function MainApp({ user }) {
+      const [lists, setLists] = useState([]);
+      const [currentView, setCurrentView] = useState('today');
+      const [showModal, setShowModal] = useState(false);
+      const [selectedList, setSelectedList] = useState(null);
+      const [selectedTask, setSelectedTask] = useState(null);
+
+      useEffect(() => {
+        const listsRef = firebase.database().ref('lists');
+        
+        listsRef.on('value', (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const listsArray = Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            })).filter(list => 
+              list.owner === user.uid || 
+              (list.sharedWith && list.sharedWith.includes(user.uid))
+            );
+            setLists(listsArray);
+          } else {
+            setLists([]);
+          }
+        });
+
+        return () => listsRef.off();
+      }, [user]);
+
+      const handleSignOut = () => {
+        firebase.auth().signOut();
+      };
+
+      const getTodayTasks = () => {
+        const today = new Date();
+        const tasks = [];
+        
+        lists.forEach(list => {
+          if (list.tasks) {
+            Object.keys(list.tasks).forEach(taskId => {
+              const task = list.tasks[taskId];
+              // Simple logic: show tasks that are due today or overdue
+              if (task.nextDue) {
+                const dueDate = new Date(task.nextDue);
+                if (dueDate <= today) {
+                  tasks.push({
+                    ...task,
+                    id: taskId,
+                    listId: list.id,
+                    listName: list.name,
+                    listType: list.type
+                  });
+                }
+              }
+            });
+          }
+        });
+        
+        return tasks;
+      };
+
+      return (
+        <div className="app-container">
+          <header className="app-header">
+            <div className="app-title">TaskSync</div>
+            <div className="header-actions">
+              <span className="user-info">{user.email}</span>
+              <button className="btn btn-secondary btn-small" onClick={handleSignOut}>
+                Sign Out
+              </button>
+            </div>
+          </header>
+
+          <main className="main-content">
+            <div className="view-controls">
+              <div className="view-tabs">
+                <button
+                  className={`view-tab ${currentView === 'today' ? 'active' : ''}`}
+                  onClick={() => setCurrentView('today')}
+                >
+                  Today
+                </button>
+                <button
+                  className={`view-tab ${currentView === 'lists' ? 'active' : ''}`}
+                  onClick={() => setCurrentView('lists')}
+                >
+                  All Lists
+                </button>
+              </div>
+            </div>
+
+            {currentView === 'today' && <TodayView tasks={getTodayTasks()} onTaskClick={(task) => {
+              setSelectedTask(task);
+              setShowModal(true);
+            }} />}
+            
+            {currentView === 'lists' && <ListsView lists={lists} onListClick={(list) => {
+              setSelectedList(list);
+              setShowModal(true);
+            }} />}
+          </main>
+
+          <button className="fab" onClick={() => {
+            setSelectedList(null);
+            setSelectedTask(null);
+            setShowModal(true);
+          }}>
+            +
+          </button>
+
+          {showModal && (
+            <Modal
+              onClose={() => {
+                setShowModal(false);
+                setSelectedList(null);
+                setSelectedTask(null);
+              }}
+              list={selectedList}
+              task={selectedTask}
+              user={user}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Today View
+    function TodayView({ tasks, onTaskClick }) {
+      if (tasks.length === 0) {
+        return (
+          <div className="empty-state">
+            <div className="empty-icon">✨</div>
+            <div className="empty-title">All clear!</div>
+            <div className="empty-text">No tasks due today</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="today-tasks">
+          {tasks.map(task => (
+            <div
+              key={task.id}
+              className={`task-item type-${task.listType}`}
+              onClick={() => onTaskClick(task)}
+            >
+              <div className={`task-checkbox ${task.completed ? 'checked' : ''}`}></div>
+              <div className="task-content">
+                <div className="task-name">{task.name}</div>
+                <div className="task-meta">
+                  <span className="task-list-name">{task.listName}</span>
+                  {task.nextDue && <span>Due: {new Date(task.nextDue).toLocaleDateString()}</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Lists View
+    function ListsView({ lists, onListClick }) {
+      if (lists.length === 0) {
+        return (
+          <div className="empty-state">
+            <div className="empty-icon">📋</div>
+            <div className="empty-title">No lists yet</div>
+            <div className="empty-text">Create your first list to get started</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="lists-grid">
+          {lists.map(list => (
+            <div key={list.id} className="list-card" onClick={() => onListClick(list)}>
+              <div className="list-header">
+                <div>
+                  <div className="list-title">{list.name}</div>
+                </div>
+                <span className={`list-type-badge badge-${list.type}`}>
+                  {list.type}
+                </span>
+              </div>
+              
+              {list.tasks && (
+                <div className="task-preview">
+                  {Object.keys(list.tasks).slice(0, 3).map(taskId => (
+                    <div key={taskId} className="task-preview-item">
+                      <div className={`task-checkbox ${list.tasks[taskId].completed ? 'checked' : ''}`}></div>
+                      <span>{list.tasks[taskId].name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Modal Component
+    function Modal({ onClose, list, task, user }) {
+      const [mode, setMode] = useState(list ? 'view' : 'create');
+      const [formData, setFormData] = useState({
+        name: list?.name || '',
+        type: list?.type || 'task',
+        description: list?.description || ''
+      });
+
+      const handleCreateList = async () => {
+        const newList = {
+          ...formData,
+          owner: user.uid,
+          createdAt: Date.now(),
+          tasks: {}
+        };
+
+        const listRef = firebase.database().ref('lists').push();
+        await listRef.set(newList);
+        onClose();
+      };
+
+      if (task) {
+        return <TaskDetailModal task={task} onClose={onClose} user={user} />;
+      }
+
+      if (mode === 'create') {
+        return (
+          <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">Create New List</div>
+                <button className="close-btn" onClick={onClose}>×</button>
+              </div>
+
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">List Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="e.g., Household Tasks"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">List Type</label>
+                  <select
+                    className="select-input"
+                    value={formData.type}
+                    onChange={(e) => setFormData({...formData, type: e.target.value})}
+                  >
+                    <option value="task">Recurring Tasks</option>
+                    <option value="inventory">Inventory (with quantities)</option>
+                    <option value="checklist">Checklist Tasks</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Description (Optional)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    placeholder="What is this list for?"
+                  />
+                </div>
+
+                <button
+                  className="btn btn-primary"
+                  onClick={handleCreateList}
+                  disabled={!formData.name}
+                >
+                  Create List
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (list) {
+        return <ListDetailModal list={list} onClose={onClose} user={user} />;
+      }
+
+      return null;
+    }
+
+    // List Detail Modal
+    function ListDetailModal({ list, onClose, user }) {
+      const [newTaskName, setNewTaskName] = useState('');
+      const [newTaskRecurrence, setNewTaskRecurrence] = useState('weekly');
+
+      const handleAddTask = async () => {
+        if (!newTaskName.trim()) return;
+
+        const taskRef = firebase.database().ref(`lists/${list.id}/tasks`).push();
+        const newTask = {
+          name: newTaskName,
+          completed: false,
+          createdAt: Date.now(),
+          createdBy: user.uid
+        };
+
+        if (list.type === 'task') {
+          newTask.recurrence = newTaskRecurrence;
+          newTask.nextDue = Date.now();
+        } else if (list.type === 'inventory') {
+          newTask.quantity = 1;
+        } else if (list.type === 'checklist') {
+          newTask.checklist = {
+            'item1': { label: 'Item 1', checked: false }
+          };
+        }
+
+        await taskRef.set(newTask);
+        setNewTaskName('');
+      };
+
+      const handleShareList = async () => {
+        const email = prompt('Enter email address to share with:');
+        if (!email) return;
+
+        // In a real app, you'd look up the user by email
+        // For now, we'll just show an info message
+        alert('To share: Have the other user sign up, then add their user ID here. This is a simplified demo.');
+      };
+
+      const tasks = list.tasks ? Object.keys(list.tasks).map(id => ({
+        id,
+        ...list.tasks[id]
+      })) : [];
+
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-title">{list.name}</div>
+                <span className={`list-type-badge badge-${list.type}`}>{list.type}</span>
+              </div>
+              <button className="close-btn" onClick={onClose}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="form-label">Add New Task</label>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={newTaskName}
+                    onChange={(e) => setNewTaskName(e.target.value)}
+                    placeholder="Task name..."
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
+                  />
+                  <button className="btn btn-primary" onClick={handleAddTask}>
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {list.type === 'task' && (
+                <div className="form-group">
+                  <label className="form-label">Recurrence</label>
+                  <select
+                    className="select-input"
+                    value={newTaskRecurrence}
+                    onChange={(e) => setNewTaskRecurrence(e.target.value)}
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Every 2 weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+              )}
+
+              <div style={{marginTop: '24px'}}>
+                <div className="form-label" style={{marginBottom: '12px'}}>Tasks</div>
+                {tasks.length === 0 ? (
+                  <div style={{color: 'var(--text-secondary)', fontSize: '14px', textAlign: 'center', padding: '20px'}}>
+                    No tasks yet
+                  </div>
+                ) : (
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                    {tasks.map(task => (
+                      <div key={task.id} className="task-preview-item">
+                        <div className={`task-checkbox ${task.completed ? 'checked' : ''}`}></div>
+                        <span style={{flex: 1}}>{task.name}</span>
+                        {list.type === 'inventory' && task.quantity && (
+                          <span style={{fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)'}}>
+                            ×{task.quantity}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="share-section">
+                <button className="btn btn-secondary" onClick={handleShareList}>
+                  Share List
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Task Detail Modal (simplified)
+    function TaskDetailModal({ task, onClose, user }) {
+      const handleComplete = async () => {
+        await firebase.database().ref(`lists/${task.listId}/tasks/${task.id}`).update({
+          completed: !task.completed,
+          completedAt: Date.now()
+        });
+        onClose();
+      };
+
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">{task.name}</div>
+              <button className="close-btn" onClick={onClose}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="task-detail-meta">
+                <div>List: {task.listName}</div>
+                {task.nextDue && <div>Due: {new Date(task.nextDue).toLocaleDateString()}</div>}
+              </div>
+
+              <div className="task-actions">
+                <button className="btn btn-primary" onClick={handleComplete}>
+                  {task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render App
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
